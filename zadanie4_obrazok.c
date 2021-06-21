@@ -174,10 +174,14 @@ main(){
 	GSI *img;
 	
 	img = gsi_create_empty();
+	img = gsi_create_with_geometry_and_color;
 	
 	GSI *bin;
 	
 	gsi_binarize(img,bin);
+	
+	save_as_pgm5(bin, "file_name.pgm", 0);
+	
 	
 	gsi_destroy(img);
 	gsi_destroy(bin);
