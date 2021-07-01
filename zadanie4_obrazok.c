@@ -191,6 +191,17 @@ char gsi_binarize(GSI *img, GSI *bin){
 }
 
 main(){
-
+	
+	GSI *img, *bin;
+	
+	img = gsi_create_by_pgm5("baboon.pgm");
+	bin = gsi_create_empty();
+	
+	gsi_binarize(img, bin);
+	
+	save_as_pgm5(bin, "baboon_bin.pgm",0);
+	
+	gsi_destroy(img);
+	gsi_destroy(bin);
 	
 }
