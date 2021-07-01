@@ -25,7 +25,7 @@ GSI *gsi_create_empty(void){
 	return img;
 }
 
-GSI *gsi_create_with_geomtery(unsigned int m, unsigned int n){
+GSI *gsi_create_with_geometry(unsigned int m, unsigned int n){
 	
 	GSI *img;
 	
@@ -128,7 +128,7 @@ char save_as_pgm5(GSI *img, char *file_name, char *comment){
 			
 		}
 	}
-	m_n_px[5] = max;
+	m_n_px[4] = max;
 	
 	write(f, m_n_px, 5);
 	
@@ -174,7 +174,7 @@ main(){
 	GSI *img;
 	
 	img = gsi_create_empty();
-	img = gsi_create_with_geometry_and_color;
+	img = gsi_create_with_geometry_and_color(100,100,250);
 	
 	GSI *bin;
 	
