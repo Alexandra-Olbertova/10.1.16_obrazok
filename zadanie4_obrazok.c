@@ -19,8 +19,11 @@ GSI *gsi_create_empty(void){
 	if(img == NULL){
 		free(img);
 		return NULL;
-	}
+	} 
 	
+	img->height = 0;
+	img->width = 0;
+
 	return img;
 }
 
@@ -37,6 +40,12 @@ GSI *gsi_create_with_geometry(unsigned int m, unsigned int n){
 	
 	img->height = m;
 	img->width = n;
+	img->px = (unsigned char*)malloc(sizeof(unsigned int)*m*n);	
+	
+	if(img->px == NULL){
+		free(img->px);
+		return NULL;
+	}
 	
 	return img;	
 }
@@ -56,6 +65,11 @@ GSI *gsi_create_with_geometry_and_color(unsigned int m, unsigned int n, unsigned
 	img->height = m;
 	img->width = n;	
 	img->px = (unsigned char*)malloc(sizeof(unsigned int)*m*n);
+	
+	if(img->px == NULL){
+		free(img->px);
+		return NULL;
+	}
 	
 	for(i = 0; i < m; i++){
 		for(j = 0; j < n; j++){
@@ -80,7 +94,7 @@ GSI *gsi_create_by_pgm5(char *file_name){
 		
 	fgets(line, 10, f);
 	
-	if(line[0] != 'P' && line[1] != '5'){
+	if(line[0] != 'P' || line[1] != '5'){
 		fclose(f);
 		return FAIL;
 	}
@@ -89,9 +103,9 @@ GSI *gsi_create_by_pgm5(char *file_name){
 		fgets(line, 80, f);
 	}while(line[0] == '#');
 	
-	sscanf(line, "%u%u", &w, &h);
+	sscanf(line, "%u%u", &h, &w);
 	
-	if((img = gsi_create_with_geometry(w, h)) == NULL){
+	if((img = gsi_create_with_geometry(h, w)) == NULL){
 		fclose(f);
 		return FAIL;
 	}
@@ -152,7 +166,7 @@ char save_as_pgm5(GSI *img, char *file_name, char *comment){
 		return 0;
 	}
 	
-	return f;
+	return 1;
 	
 }	
 	
