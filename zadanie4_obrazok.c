@@ -122,7 +122,14 @@ char save_as_pgm5(GSI *img, char *file_name, char *comment){
 	
 	int f = open(file_name, O_WRONLY);
 	
-	write(f, "P5", 2);
+	if(f < 0){
+		return;
+	}
+	
+	if(write(f, "P5\n", 2) < 0){
+		close(f);
+		return FAIL;
+	}
 	
 	m_n_px[0] = img->width;
 	m_n_px[3] = m_n_px[1] = ' ';
@@ -138,7 +145,10 @@ char save_as_pgm5(GSI *img, char *file_name, char *comment){
 	}
 	m_n_px[4] = max;
 	
-	write(f, m_n_px, 5);
+	if(write(f, m_n_px, 5) < 0){
+		close(f);
+		return FAIL;
+	}
 	
 	if(comment[0] == '#')
 		write(f, comment, sizeof(comment));
@@ -154,6 +164,8 @@ char save_as_pgm5(GSI *img, char *file_name, char *comment){
 	if(close(f) == EOF){
 		return FAIL;
 	}
+	
+	return f;
 	
 }	
 	
