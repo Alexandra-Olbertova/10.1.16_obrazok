@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <errno.h>
 
 #define PIX(im,x,y) (im->px[(im->height)*x+y])
+#define FAIL 0
 
 typedef struct{
 	unsigned int width;
@@ -79,14 +79,12 @@ GSI *gsi_create_by_pgm5(char *file_name){
 	int f = open(file_name, O_RDONLY);
 	
 	if(f < 0){
-		printf("%s", strerror(errno));
 		return NULL;
 	}
 	
 	read(f, type, 2);
 	
 	if(type[0] != 'P' || type[1] != '5'){
-		printf("%s", strerror(errno));
 		return NULL;
 	}
 	
@@ -144,8 +142,7 @@ char save_as_pgm5(GSI *img, char *file_name, char *comment){
 	}
 	
 	if(close(f) == EOF){
-		printf("Unable to close file\n");
-		return;
+		return FAIL;
 	}
 	
 }	
