@@ -73,7 +73,7 @@ GSI *gsi_create_by_pgm5(char *file_name){
 	
 	int x, y;
 	char type[2];
-	char *comment, *col;
+	char *comment;
 	int m_n_px[5];
 	
 	int f = open(file_name, O_RDONLY);
@@ -103,6 +103,11 @@ GSI *gsi_create_by_pgm5(char *file_name){
 		close(f);
 		return FAIL;
 	}
+		
+	if(read(f, imgNew->px, sizeof(unsigned char)*imgNew->width*imgNew->height) < 0){
+		close(f);
+		return FAIL;
+	}
 	
 	if(close(f) == EOF){
 		return FAIL;
@@ -114,11 +119,11 @@ GSI *gsi_create_by_pgm5(char *file_name){
 
 char save_as_pgm5(GSI *img, char *file_name, char *comment){
 	
-	int x,y;
 	char type[2];
 	unsigned int m_n_px[5];
 	int max = 0;
 	unsigned int *col;
+	int x,y;
 	
 	int f = open(file_name, O_WRONLY);
 	
@@ -153,12 +158,9 @@ char save_as_pgm5(GSI *img, char *file_name, char *comment){
 	if(comment[0] == '#')
 		write(f, comment, sizeof(comment));
 
-	for(x = 0; x < img->height; x++){
-		for(y = 0; y < img->width; y++){
-			
-			write(f, col, PIX(img,x,y));
-			
-		}
+	if(write(f,img->px,sizeof(unsigned char)*img->width*img->height) < 0){
+		close(f);
+		return FAIL;
 	}
 	
 	if(close(f) == EOF){
@@ -189,19 +191,6 @@ char gsi_binarize(GSI *img, GSI *bin){
 }
 
 main(){
+
 	
-	GSI *img;
-	
-	img = gsi_create_empty();
-	img = gsi_create_with_geometry_and_color(100,100,250);
-	
-	GSI *bin;
-	
-	gsi_binarize(img,bin);
-	
-	save_as_pgm5(bin, "file_name.pgm", 0);
-	
-	
-	gsi_destroy(img);
-	gsi_destroy(bin);
 }
