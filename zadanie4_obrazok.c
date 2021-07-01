@@ -69,7 +69,7 @@ GSI *gsi_create_with_geometry_and_color(unsigned int m, unsigned int n, unsigned
 
 GSI *gsi_create_by_pgm5(char *file_name){
 	
-	GSI *img;
+	GSI *imgNew;
 	
 	int x, y;
 	char type[2];
@@ -78,27 +78,37 @@ GSI *gsi_create_by_pgm5(char *file_name){
 	
 	int f = open(file_name, O_RDONLY);
 	
-	if(f < 0){
+	if(f < 0)
 		return NULL;
+	
+	if(read(f, type, 2) < 0){
+		close(f);
+		return FAIL;
 	}
 	
-	read(f, type, 2);
-	
 	if(type[0] != 'P' || type[1] != '5'){
-		return NULL;
+		close(f);
+		return FAIL;
 	}
 	
 	if(comment[0] == '#')
 		read(f, comment, sizeof(comment));
 	
-	read(f, m_n_px, 5);
+	if(read(f, m_n_px, 5) < 0){
+		close(f);
+		return FAIL;
+	}
 	
-	img->width = m_n_px[0];
-	img->height = m_n_px[2];	
+	if((imgNew = gsi_create_with_geometry_and_color(m_n_px[0],m_n_px[2],m_n_px[4])) == NULL){
+		close(f);
+		return FAIL;
+	}
 	
-	PIX(img, x, y) = read(f, col, img->height*img->width);
+	if(close(f) == EOF){
+		return FAIL;
+	}
 	
-	return img;
+	return imgNew;
 	
 }
 
