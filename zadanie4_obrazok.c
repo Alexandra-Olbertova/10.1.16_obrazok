@@ -72,10 +72,10 @@ GSI *gsi_create_by_pgm5(char *file_name){
 	GSI *img;
 	char line[80];
 	unsigned int w,h;
-	int x, y, col, max;
+	int x, y, col;
 	
 	f = fopen(file_name, "rb");
-	if(f < 0)
+	if(f == NULL)
 		return NULL;
 		
 	fgets(line, 10, f);
@@ -85,9 +85,13 @@ GSI *gsi_create_by_pgm5(char *file_name){
 		return FAIL;
 	}
 	
-	sscanf(line, "%u%u%d", &w, &h, &max);
+	do{
+		fgets(line, 80, f);
+	}while(line[0] == '#');
 	
-	if((img = gsi_create_with_geometry_and_color(w, h, max)) == NULL){
+	sscanf(line, "%u%u", &w, &h);
+	
+	if((img = gsi_create_with_geometry(w, h)) == NULL){
 		fclose(f);
 		return FAIL;
 	}
@@ -109,9 +113,9 @@ GSI *gsi_create_by_pgm5(char *file_name){
 
 char save_as_pgm5(GSI *img, char *file_name, char *comment){
 	
+	FILE *f;
 	int max = 0;
 	int x, y;
-	FILE *f;
 	
 	f = fopen(file_name, "wb");
 	
@@ -122,9 +126,9 @@ char save_as_pgm5(GSI *img, char *file_name, char *comment){
 	fprintf(f,"P5\n");
 	
 	if(comment != NULL){
-		fprintf(f,"#");
-		fprintf(f,comment);
-		fprintf(f,"\n");
+		fprintf(f, "#");
+		fprintf(f, comment);
+		fprintf(f, "\n");
 	}
 	
 	for(x = 0; x < img->height; x++){
