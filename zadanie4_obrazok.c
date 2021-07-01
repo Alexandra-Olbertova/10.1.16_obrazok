@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
 
 #define PIX(im,x,y) (im->px[(im->height)*x+y])
 #define FAIL 0
@@ -69,76 +68,64 @@ GSI *gsi_create_with_geometry_and_color(unsigned int m, unsigned int n, unsigned
 
 GSI *gsi_create_by_pgm5(char *file_name){
 	
-	GSI *imgNew;
+	FILE* f;
+	GSI *img;
+	char line[80];
+	unsigned int w,h;
+	int x, y, col, max;
 	
-	int x, y;
-	char type[2];
-	char *comment;
-	int m_n_px[5];
-	
-	int f = open(file_name, O_RDONLY);
-	
+	f = fopen(file_name, "rb");
 	if(f < 0)
 		return NULL;
-	
-	if(read(f, type, 2) < 0){
-		close(f);
-		return FAIL;
-	}
-	
-	if(type[0] != 'P' || type[1] != '5'){
-		close(f);
-		return FAIL;
-	}
-	
-	if(comment[0] == '#')
-		read(f, comment, sizeof(comment));
-	
-	if(read(f, m_n_px, 5) < 0){
-		close(f);
-		return FAIL;
-	}
-	
-	if((imgNew = gsi_create_with_geometry_and_color(m_n_px[0],m_n_px[2],m_n_px[4])) == NULL){
-		close(f);
-		return FAIL;
-	}
 		
-	if(read(f, imgNew->px, sizeof(unsigned char)*imgNew->width*imgNew->height) < 0){
-		close(f);
+	fgets(line, 10, f);
+	
+	if(line[0] != 'P' && line[1] != '5'){
+		fclose(f);
 		return FAIL;
 	}
 	
-	if(close(f) == EOF){
+	sscanf(line, "%u%u%d", &w, &h, &max);
+	
+	if((img = gsi_create_with_geometry_and_color(w, h, max)) == NULL){
+		fclose(f);
 		return FAIL;
 	}
 	
-	return imgNew;
+	for(x = 0; x < img->height; x++){
+		for(y = 0; y < img->width; y++){
+			fscanf(f, "%c ", &col);
+			PIX(img, x, y) = col;
+		}
+	}
+	
+	if(fclose(f) == EOF){
+		return FAIL;
+	}
+	
+	return img;
 	
 }
 
 char save_as_pgm5(GSI *img, char *file_name, char *comment){
 	
-	char type[2];
-	unsigned int m_n_px[5];
 	int max = 0;
-	unsigned int *col;
-	int x,y;
+	int x, y;
+	FILE *f;
 	
-	int f = open(file_name, O_WRONLY);
+	f = fopen(file_name, "wb");
 	
-	if(f < 0){
-		return;
+	if(f == NULL){
+		return 0;
 	}
+
+	fprintf(f,"P5\n");
 	
-	if(write(f, "P5\n", 2) < 0){
-		close(f);
-		return FAIL;
+	if(comment != NULL){
+		fprintf(f,"#");
+		fprintf(f,comment);
+		fprintf(f,"\n");
 	}
-	
-	m_n_px[0] = img->width;
-	m_n_px[3] = m_n_px[1] = ' ';
-	m_n_px[2] = img->height;
 	
 	for(x = 0; x < img->height; x++){
 		for(y = 0; y < img->width; y++){
@@ -148,23 +135,17 @@ char save_as_pgm5(GSI *img, char *file_name, char *comment){
 			
 		}
 	}
-	m_n_px[4] = max;
 	
-	if(write(f, m_n_px, 5) < 0){
-		close(f);
-		return FAIL;
-	}
+	fprintf(f,"%u %u %d\n", img->width, img->height, max);
 	
-	if(comment[0] == '#')
-		write(f, comment, sizeof(comment));
-
-	if(write(f,img->px,sizeof(unsigned char)*img->width*img->height) < 0){
-		close(f);
-		return FAIL;
-	}
+	for(x = 0; x < img->height; x++){
+		for(y = 0; y < img->width; y++){
+			fprintf(f,"%c", PIX(img, x, y));
+		}
+	}	
 	
-	if(close(f) == EOF){
-		return FAIL;
+	if(fclose(f) == EOF){
+		return 0;
 	}
 	
 	return f;
@@ -195,11 +176,11 @@ main(){
 	GSI *img, *bin;
 	
 	img = gsi_create_by_pgm5("baboon.pgm");
-	bin = gsi_create_empty();
+	bin = gsi_create_with_geometry(img->width,img->height);
 	
 	gsi_binarize(img, bin);
 	
-	save_as_pgm5(bin, "baboon_bin.pgm",0);
+	save_as_pgm5(bin,"baboon_bin.pgm", "pgm5");
 	
 	gsi_destroy(img);
 	gsi_destroy(bin);
