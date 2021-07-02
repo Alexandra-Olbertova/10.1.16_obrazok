@@ -112,7 +112,7 @@ GSI *gsi_create_by_pgm5(char *file_name){
 	
 	for(x = 0; x < img->height; x++){
 		for(y = 0; y < img->width; y++){
-			fscanf(f, "%c ", &col);
+			fscanf(f, "%c", &col);
 			PIX(img, x, y) = col;
 		}
 	}
